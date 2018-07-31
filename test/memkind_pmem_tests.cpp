@@ -165,3 +165,68 @@ TEST_F(MemkindPmemTests, test_TC_MEMKIND_PmemRealloc)
 
     memkind_free(pmem_kind, default_str);
 }
+
+//test dziesiec razy alokuje i zwalnia 100 elementowa tablice i do kazdego elementu tej tablicy przypisuje ptr zwracany przez funkcje memkind_posix_memalign
+TEST_F(MemkindPmemTests, test_TC_MEMKIND_PmemPosixMemalign)
+{
+	const int max_allocs = 300;
+	const int test_value = 123456;
+	size_t alignment = 131072;
+	unsigned i;
+	int *ptrs[10 * max_allocs];
+	void *ptr;
+	int ret = 0;
+	int success = 0;
+
+	for(int j=0; j<10; j++)
+	{
+		memset(ptrs, 0, sizeof(ptrs));
+
+		for (i = 0; i < max_allocs; ++i)
+		{
+			errno = 0;
+			
+#if 1
+			ret = memkind_posix_memalign(pmem_kind, &ptr, 65536 /*alignment*/, alignment /*sizeof(void *)*/);
+			if (ret != 0)
+			{
+				std::cout << "Alokacja nie powiodla sie! " << "i= " << i << " j= " << j  << std::endl;
+				break;
+			}
+#else
+			ptr = memkind_malloc(pmem_kind, alignment);
+			if (ptr == nullptr)
+			{
+				std::cout << "Alokacja nie powiodla sie! " << "i= " << i << " j= " << j  << std::endl;
+				break;
+			}
+#endif
+
+			EXPECT_EQ(success, ret);
+			EXPECT_EQ(errno, 0);
+
+			ptrs[j * max_allocs + i] = (int *)ptr;
+
+			//std::cout << "ptr " << "i:" << i << " ptr: " << ptrs[j * max_allocs + i]  << std::endl;
+			std::cout << ptrs[j * max_allocs + i]  << std::endl;
+
+			/* at least one allocation must succeed */
+			ASSERT_TRUE(i != 0 || ptr != nullptr);
+			if (ptr == nullptr)
+				break;
+
+			/* ptr should be usable */
+			*(int*)ptr = test_value;
+			ASSERT_EQ(*(int*)ptr, test_value);
+
+		}
+
+		for (i = 0; i < max_allocs; ++i) {
+			if (ptrs[j * max_allocs + i] == NULL)
+				break;
+			memkind_free(pmem_kind, ptrs[j * max_allocs + i]);
+		}
+		std::cout << std::endl;
+	}
+}
+

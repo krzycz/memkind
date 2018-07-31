@@ -31,18 +31,18 @@ fi
 cd $(dirname $0)
 EXTRA_CONF=$@
 
-if [ ! -f ./jemalloc/obj/lib/libjemalloc_pic.a ]; then
+#if [ ! -f ./jemalloc/obj/lib/libjemalloc_pic.a ]; then
 	./build_jemalloc.sh $EXTRA_CONF
-fi
+#fi
 
-if [ ! -f ./configure ]; then
+#if [ ! -f ./configure ]; then
 	./autogen.sh
-fi
+#fi
 
-if [ ! -f ./Makefile ]; then
-	./configure $EXTRA_CONF
-fi
+#if [ ! -f ./Makefile ]; then
+	./configure $EXTRA_CONF --enable-debug EXTRA_CFLAGS="-ggdb -O0"
+#fi
 
 #use V=1 for full cmdlines of build
-make all -j $MAKEOPTS
-make checkprogs -j $MAKEOPTS
+make all -j $MAKEOPTS EXTRA_CFLAGS="-ggdb -O0"
+make checkprogs -j $MAKEOPTS EXTRA_CFLAGS="-ggdb -O0"

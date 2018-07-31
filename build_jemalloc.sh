@@ -24,12 +24,15 @@
 
 EXTRA_CONF=$@
 
+JE_PREFIX=jemk_
 cd jemalloc
-test -e configure || autoconf
+#test -e configure || autoconf
+#./autogen.sh
 test -e obj || mkdir obj
 cd obj
 ../configure --enable-autogen --with-jemalloc-prefix=$JE_PREFIX --without-export \
              --disable-stats --disable-fill --disable-valgrind \
-             $EXTRA_CONF --with-malloc-conf="narenas:256,lg_tcache_max:12"
+             $EXTRA_CONF --with-malloc-conf="narenas:256,lg_tcache_max:12" --enable-debug --disable-cxx
 
 make -j`nproc`
+cd ..

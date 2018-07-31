@@ -214,7 +214,7 @@ function execute_pytest()
 numactl --hardware | grep "^node 1" > /dev/null
 if [ $? -ne 0 ]; then
     echo "ERROR: $0 requires a NUMA enabled system with more than one node."
-    exit 1
+    #exit 1
 fi
 
 if [ ! -f /usr/bin/memkind-hbw-nodes ]; then
